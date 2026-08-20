@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+    postgres-db:
+        image: postgres:15-alpine
+        container_name: postgres-db
+        environment:
+            POSTGRES_DB: online_shopping_db
+            POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
+            POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        networks:
+            - app-network
+
+    backend-app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: onlineshopping-app
+        ports:
+            - "8080:8080"
+        environment:
+            SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/online_shopping_db
+            SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+            SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+            SPRING_JPA_HIBERNATE_DDL_AUTO: update
+            APP_JWT_SECRET: ${APP_JWT_SECRET}
+            APP_JWT_EXPIRATIONMS: ${APP_JWT_EXPIRATIONMS}
+        depends_on:
+            - postgres-db
+        networks:
+            - app-network
+
+volumes:
+    postgres_data:
+
+networks:
+    app-network:
+        driver: bridge
