@@ -38,18 +38,14 @@ public class SecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.csrf(AbstractHttpConfigurer::disable)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(auth -> 
-			    auth.requestMatchers(
-			            "/auth/**",
-			            "/v3/api-docs/**",
-			            "/swagger-ui/**",
-			            "/swagger-ui.html"
-			    ).permitAll()
-			    .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**").permitAll()
-			    .requestMatchers(HttpMethod.POST, "/products/**", "/categories/**").hasRole("ADMIN")
-			    .requestMatchers("/cart/**").hasRole("CUSTOMER")
-			    .requestMatchers("/orders/**").hasAnyRole("CUSTOMER", "ADMIN")
-			    .anyRequest().authenticated());
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+						.permitAll().requestMatchers(HttpMethod.GET, "/products/**", "/categories/**").permitAll()
+						.requestMatchers(HttpMethod.POST, "/products/**", "/categories/**").hasRole("ADMIN")
+						.requestMatchers(HttpMethod.PUT, "/products/**", "/categories/**").hasRole("ADMIN")
+						.requestMatchers(HttpMethod.DELETE, "/products/**", "/categories/**").hasRole("ADMIN")
+						.requestMatchers("/cart/**").hasRole("CUSTOMER").requestMatchers("/orders/**")
+						.hasAnyRole("CUSTOMER", "ADMIN").anyRequest().authenticated());
 
 		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -38,4 +38,17 @@ public class ProductController {
 	public ResponseEntity<List<ProductDto>> searchProducts(@RequestParam String name) {
 		return ResponseEntity.ok(productService.searchProducts(name));
 	}
+
+	@PutMapping("/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody ProductDto dto) {
+		return ResponseEntity.ok(productService.updateProduct(id, dto));
+	}
+
+	@DeleteMapping("/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
+		productService.deleteProduct(id);
+		return ResponseEntity.ok("Məhsul uğurla silindi.");
+	}
 }

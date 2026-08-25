@@ -28,4 +28,16 @@ public class CartController {
 	public ResponseEntity<List<CartItemDto>> getCart(Authentication authentication) {
 		return ResponseEntity.ok(cartService.getCartItems(authentication.getName()));
 	}
+
+	@DeleteMapping("/items/{itemId}")
+	public ResponseEntity<String> removeFromCart(Authentication authentication, @PathVariable Long itemId) {
+		cartService.removeFromCart(authentication.getName(), itemId);
+		return ResponseEntity.ok("Məhsul səbətdən uğurla silindi.");
+	}
+
+	@DeleteMapping("/clear")
+	public ResponseEntity<String> clearCart(Authentication authentication) {
+		cartService.clearCart(authentication.getName());
+		return ResponseEntity.ok("Səbət tamamilə təmizləndi.");
+	}
 }

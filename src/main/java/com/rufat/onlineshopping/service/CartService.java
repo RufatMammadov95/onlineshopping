@@ -74,4 +74,34 @@ public class CartService {
 			return dto;
 		}).collect(Collectors.toList());
 	}
+
+	@Transactional
+	public void removeFromCart(String username, Long itemId) {
+		User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new RuntimeException("İstifadəçi tapılmadı"));
+
+		Cart cart = cartRepository.findByUserId(user.getId())
+				.orElseThrow(() -> new RuntimeException("Səbət tapılmadı"));
+
+		CartItem cartItem = cartItemRepository.findById(itemId)
+				.orElseThrow(() -> new RuntimeException("Səbətdə belə məhsul tapılmadı"));
+
+		if (!cartItem.getCart().getId().equals(cart.getId())) {
+			throw new RuntimeException("Bu məhsulu silməyə icazəniz yoxdur!");
+		}
+
+		cartItemRepository.delete(cartItem);
+	}
+
+	@Transactional
+	public void clearCart(String username) {
+		User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new RuntimeException("İstifadəçi tapılmadı"));
+
+		Cart cart = cartRepository.findByUserId(user.getId())
+				.orElseThrow(() -> new RuntimeException("Səbət tapılmadı"));
+
+		cartItemRepository.deleteAll(cart.getItems());
+		cart.getItems().clear();
+	}
 }

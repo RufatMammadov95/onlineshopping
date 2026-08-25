@@ -6,6 +6,7 @@ import com.rufat.onlineshopping.entity.Product;
 import com.rufat.onlineshopping.repository.CategoryRepository;
 import com.rufat.onlineshopping.repository.ProductRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ public class ProductService {
 		this.categoryRepository = categoryRepository;
 	}
 
+	@Transactional
 	public ProductDto createProduct(ProductDto dto) {
 		Category category = categoryRepository.findById(dto.getCategoryId())
 				.orElseThrow(() -> new RuntimeException("Kateqoriya tapılmadı!"));
@@ -46,16 +48,45 @@ public class ProductService {
 				.collect(Collectors.toList());
 	}
 
+	@Transactional
+	public ProductDto updateProduct(Long id, ProductDto dto) {
+		Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Məhsul tapılmadı!"));
+
+		if (dto.getCategoryId() != null) {
+			Category category = categoryRepository.findById(dto.getCategoryId())
+					.orElseThrow(() -> new RuntimeException("Kateqoriya tapılmadı!"));
+			product.setCategory(category);
+		}
+
+		product.setName(dto.getName());
+		product.setDescription(dto.getDescription());
+		product.setPrice(dto.getPrice());
+		product.setStockQuantity(dto.getStockQuantity());
+		product.setImageUrl(dto.getImageUrl());
+
+		Product updatedProduct = productRepository.save(product);
+		return mapToDto(updatedProduct);
+	}
+
+	@Transactional
+	public void deleteProduct(Long id) {
+		if (!productRepository.existsById(id)) {
+			throw new RuntimeException("Məhsul tapılmadı!");
+		}
+		productRepository.deleteById(id);
+	}
+
 	private ProductDto mapToDto(Product product) {
 		ProductDto dto = new ProductDto();
 		dto.setId(product.getId());
 		dto.setName(product.getName());
-		dto.getDescription();
 		dto.setDescription(product.getDescription());
 		dto.setPrice(product.getPrice());
 		dto.setStockQuantity(product.getStockQuantity());
 		dto.setImageUrl(product.getImageUrl());
-		dto.setCategoryId(product.getCategory().getId());
+		if (product.getCategory() != null) {
+			dto.setCategoryId(product.getCategory().getId());
+		}
 		return dto;
 	}
 }
