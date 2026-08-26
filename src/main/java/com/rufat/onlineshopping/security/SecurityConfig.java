@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.Customizer;
 
 @Configuration
 @EnableMethodSecurity
@@ -36,11 +37,12 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf(AbstractHttpConfigurer::disable)
+		http.cors(Customizer.withDefaults()).csrf(AbstractHttpConfigurer::disable)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
 						.permitAll().requestMatchers(HttpMethod.GET, "/products/**", "/categories/**").permitAll()
+						.requestMatchers("/admin/**").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.POST, "/products/**", "/categories/**").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/products/**", "/categories/**").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.DELETE, "/products/**", "/categories/**").hasRole("ADMIN")

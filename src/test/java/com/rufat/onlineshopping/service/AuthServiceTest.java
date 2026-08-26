@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -49,7 +50,6 @@ class AuthServiceTest {
 		registerRequest.setUsername("rufat");
 		registerRequest.setEmail("rufat@gmail.com");
 		registerRequest.setPassword("password123");
-		registerRequest.setRole(Role.CUSTOMER);
 
 		loginRequest = new LoginRequest();
 		loginRequest.setUsername("rufat");
@@ -68,7 +68,9 @@ class AuthServiceTest {
 
 		// Assert
 		assertEquals("İstifadəçi uğurla qeydiyyatdan keçdi!", result);
-		verify(userRepository, times(1)).save(any(User.class));
+		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+		verify(userRepository, times(1)).save(userCaptor.capture());
+		assertEquals(Role.CUSTOMER, userCaptor.getValue().getRole());
 	}
 
 	@Test

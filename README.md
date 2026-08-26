@@ -1,141 +1,252 @@
-# 🛒 E-Commerce REST API Application
+# Online Shopping API
 
-A robust, scalable, and secure backend RESTful API built with **Java 21** and **Spring Boot 3**. This application models a full-fledged E-Commerce system featuring JWT-based authentication, entity relationships, PostgreSQL integration, comprehensive unit testing with Mockito, and full Dockerization.
+Java 21 və Spring Boot ilə hazırlanmış onlayn alış-veriş REST API-si. Layihədə JWT autentifikasiyası, `CUSTOMER` və `ADMIN` rolları, məhsul/kateqoriya idarəetməsi, səbət, sifariş və Swagger UI mövcuddur. Frontend ayrıca `frontend/` qovluğundadır.
 
----
+## Texnologiyalar
 
-## 🚀 Features
+- Java 21, Spring Boot 3.2.5, Maven
+- Spring Data JPA / Hibernate və PostgreSQL 15
+- Spring Security və JWT
+- Springdoc OpenAPI / Swagger UI
+- Docker Compose
+- JUnit 5, Mockito və H2 (testlər üçün)
 
-* **User Authentication & Authorization**: Secure signup, login, and Role-Based Access Control (RBAC) using **JWT (JSON Web Tokens)** and **Spring Security**.
-* **Product & Category Management**: Full CRUD operations for managing e-commerce catalog items.
-* **Shopping Cart System**: Dynamic item management allowing users to add, update, and remove items from their active cart.
-* **Order Processing**: Automatic order generation from shopping cart contents with status updates.
-* **API Documentation**: Interactive REST API documentation powered by **Swagger UI / OpenApi 3**.
-* **Isolated Testing**: Comprehensive unit tests for service layers using **JUnit 5** & **Mockito**, with **H2 in-memory database** for context testing.
-* **Containerization**: Single-command execution via **Docker** and **Docker Compose**.
+## İşə salma
 
----
+### Tələblər
 
-## 🛠️ Tech Stack
+- Java 21
+- PostgreSQL **və ya** Docker Desktop
+- Lokal frontend üçün Node.js (istəyə bağlı)
 
-* **Language**: Java 21
-* **Framework**: Spring Boot 3
-* **Database**: PostgreSQL (Production/Docker), H2 (Testing)
-* **ORM / Data Access**: Spring Data JPA / Hibernate
-* **Security**: Spring Security, JJWT (JSON Web Token)
-* **Build Tool**: Maven
-* **Testing**: JUnit 5, Mockito
-* **DevOps**: Docker, Docker Compose
-* **Documentation**: Springdoc OpenAPI / Swagger UI
+### Mühit dəyişənləri
 
----
+Layihənin kökündə `.env` faylı yaradın. Nümunə:
 
-## 📁 Project Structure
+```env
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/online_shopping_db
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=your_password
+APP_JWT_SECRET=minimum_32_simvoldan_uzun_gizli_jwt_acari_yazin
+APP_JWT_EXPIRATIONMS=86400000
+```
+
+`APP_JWT_SECRET` ən azı 32 simvol olmalıdır. Lokal işə salmada PostgreSQL-də `online_shopping_db` bazasını yaradın.
+
+### Docker ilə
+
+```bash
+docker compose up --build
+```
+
+- Backend: `http://localhost:8080`
+- Swagger: `http://localhost:8080/swagger-ui/index.html`
+- Frontend: `http://localhost:3000`
+
+Dayandırmaq üçün:
+
+```bash
+docker compose down
+```
+
+### Lokal işə salma
+
+```bash
+./mvnw spring-boot:run
+```
+
+Windows PowerShell-də:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+Frontend-i ayrıca başlatmaq üçün:
+
+```powershell
+cd frontend
+node server.js
+```
+
+Sonra `http://localhost:5500` ünvanını açın.
+
+## Swagger-dən istifadə
+
+Swagger ünvanı: `http://localhost:8080/swagger-ui/index.html`
+
+Swagger-də endpoint-i açın, **Try it out** düyməsini sıxın, aşağıdakı uyğun JSON-u **Request body** sahəsinə yazın və **Execute** edin. `GET` və `DELETE` sorğularına JSON yazılmır; onlar yalnız parametr (`id`, `itemId`, `name`) və ya token tələb edə bilər.
+
+### 1. Qeydiyyat və giriş
+
+**POST `/auth/register`** — adi `CUSTOMER` istifadəçisi yaradır:
+
+```json
+{
+  "username": "ali",
+  "email": "ali@example.com",
+  "password": "StrongPassword123"
+}
+```
+
+**POST `/auth/login`** — token almaq üçün:
+
+```json
+{
+  "username": "ali",
+  "password": "StrongPassword123"
+}
+```
+
+Cavabdakı `token` dəyərini kopyalayın. Swagger-in yuxarısındakı **Authorize** düyməsində `bearerAuth` sahəsinə yalnız tokenin özünü yapışdırın (adətən `Bearer ` prefiksi yazılmır), sonra **Authorize** edin.
+
+### 2. Admin yaratmaq və ya rolu vermək
+
+İlk admin istifadəçisini yaratmaq üçün aşağıdakı SQL sorğusundan istifadə edin. Sonra admin tokeni ilə **POST `/admin/users`** endpoint-i yeni admin yaratmaq üçün istifadə edilə bilər:
+
+```json
+{
+  "username": "admin2",
+  "email": "admin2@example.com",
+  "password": "StrongPassword123"
+}
+```
+
+### 3. Kateqoriya və məhsul
+
+Bu endpoint-lər üçün admin tokeni ilə authorize olun.
+
+**POST `/categories`**:
+
+```json
+{
+  "name": "Elektronika",
+  "description": "Telefon, kompüter və aksesuarlar"
+}
+```
+
+**POST `/products`** və **PUT `/products/{id}`**:
+
+```json
+{
+  "name": "Wireless Mouse",
+  "description": "Simsiz optik siçan",
+  "price": 29.99,
+  "stockQuantity": 50,
+  "imageUrl": "https://example.com/images/mouse.jpg",
+  "categoryId": 1
+}
+```
+
+`categoryId` əvvəl yaradılmış kateqoriyanın ID-sidir. Məhsulları `GET /products`, kateqoriyaya görə `GET /products/category/{categoryId}`, ada görə isə `GET /products/search?name=mouse` ilə görə bilərsiniz.
+
+### 4. Səbət və sifariş
+
+Bu endpoint-lər üçün `CUSTOMER` tokeni ilə authorize olun.
+
+**POST `/cart`** — məhsulu səbətə əlavə edir:
+
+```json
+{
+  "productId": 1,
+  "quantity": 2
+}
+```
+
+Səbətə baxmaq: **GET `/cart`**. Səbət sətrini silmək: **DELETE `/cart/items/{itemId}`**; `itemId` dəyərini `GET /cart` cavabındakı `id` sahəsindən götürün. Səbəti tam təmizləmək: **DELETE `/cart/clear`**.
+
+**POST `/orders`** — səbətdəki məhsullardan sifariş yaradır:
+
+```json
+{
+  "shippingAddress": "Bakı şəhəri, Nizami küçəsi 10, mənzil 5"
+}
+```
+
+Sifarişlərə baxmaq: **GET `/orders`**. Sifariş yaradılan zaman məhsul stokundan səbətdəki miqdar çıxılır.
+
+## Endpoint və giriş hüquqları
+
+| Metod | Endpoint | Giriş |
+|---|---|---|
+| POST | `/auth/register`, `/auth/login` | Açıq |
+| POST | `/admin/users` | ADMIN |
+| GET | `/categories`, `/products/**` | Açıq |
+| POST, PUT, DELETE | `/categories/**`, `/products/**` | ADMIN |
+| GET, POST, DELETE | `/cart/**` | CUSTOMER |
+| GET, POST | `/orders` | CUSTOMER və ya ADMIN |
+
+## SQL: istifadəçi rollarının və məlumatlarının idarə edilməsi
+
+Bu sorğuları PostgreSQL-də işlədin. Dəyişiklik/silmə etməzdən əvvəl düzgün istifadəçini seçdiyinizi yoxlayın.
+
+Mövcud istifadəçilərə baxış:
+
+```sql
+SELECT id, username, email, role FROM users;
+```
+
+İstifadəçiyə `ADMIN` rolu vermək (ilk admin üçün):
+
+```sql
+UPDATE users
+SET role = 'ADMIN'
+WHERE email = 'senin_emailin@gmail.com';
+```
+
+İstifadəçini silmək üçün köhnə sorğudakı səbət asılılıqları düzəldildi: əvvəl `cart_items`, sonra `carts` silinməlidir. İstifadəçinin sifarişləri varsa, `order_items` və `orders` da xarici açar məhdudiyyəti yaratdığı üçün onlar da əvvəl silinir. `:user_id` yerinə silinəcək istifadəçinin ID-sini yazın (məsələn, `2`).
+
+```sql
+BEGIN;
+
+-- Əvvəl sifarişin asılı sətirlərini silirik.
+DELETE FROM order_items
+WHERE order_id IN (
+    SELECT id FROM orders WHERE user_id = :user_id
+);
+
+DELETE FROM orders
+WHERE user_id = :user_id;
+
+-- Sonra səbətin asılı sətirlərini, daha sonra səbətin özünü silirik.
+DELETE FROM cart_items
+WHERE cart_id IN (
+    SELECT id FROM carts WHERE user_id = :user_id
+);
+
+DELETE FROM carts
+WHERE user_id = :user_id;
+
+-- Sonda istifadəçini silirik.
+DELETE FROM users
+WHERE id = :user_id;
+
+COMMIT;
+```
+
+Qeyd: psql-də `:user_id` parametr kimi işləmirsə, onu birbaşa rəqəmlə əvəz edin; məsələn `WHERE user_id = 2`. Səhv istifadəçini seçmisinizsə, `COMMIT` əvəzinə `ROLLBACK;` işlədin.
+
+## Testlər
+
+```bash
+./mvnw test
+```
+
+Windows PowerShell-də:
+
+```powershell
+.\mvnw.cmd test
+```
+
+## Layihə quruluşu
 
 ```text
-src
-├── main
-│   ├── java/com/rufat/onlineshopping
-│   │   ├── config       # Security & App Configurations
-│   │   ├── controller   # REST Endpoints
-│   │   ├── dto          # Data Transfer Objects (Requests/Responses)
-│   │   ├── entity       # JPA Database Entities
-│   │   ├── repository   # Spring Data JPA Repositories
-│   │   ├── security     # JWT Filters & UserDetailsService
-│   │   └── service      # Core Business Logic & Interfaces
-│   └── resources
-│       └── application.properties
-└── test
-    ├── java/com/rufat/onlineshopping
-    │   └── service      # Mockito Unit Tests (Cart, Order, Auth, etc.)
-    └── resources
-        └── application-test.properties
+src/main/java/com/rufat/onlineshopping
+├── config        # OpenAPI və CORS konfiqurasiyası
+├── controller    # REST endpoint-ləri
+├── dto           # Request/response modelləri
+├── entity        # JPA entity-ləri
+├── repository    # Verilənlər bazası sorğuları
+├── security      # JWT və Spring Security
+└── service       # Biznes məntiqi
+frontend/         # HTML, CSS və JavaScript istifadəçi interfeysi
 ```
-
----
-
-## ⚙️ Getting Started
-
-### Prerequisites
-* **Java 21** installed
-* **Maven 3.x** installed
-* **Docker Desktop** installed and running
-
----
-
-### 🔑 Environment Configuration
-
-1. Create a `.env` file in the root directory (you can copy from `.env.example`):
-   ```env
-   SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/online_shopping_db
-   SPRING_DATASOURCE_USERNAME=postgres
-   SPRING_DATASOURCE_PASSWORD=your_password
-
-   APP_JWT_SECRET=YourSuperSecretKeyForJWTAuthSystemWhichIsAtLeast256BitsLong
-   APP_JWT_EXPIRATIONMS=86400000
-   ```
-
----
-
-### 🐳 Running with Docker (Recommended)
-
-To run the full stack (Spring Boot Backend + PostgreSQL Database) in containers:
-
-```bash
-# Build and start containers
-docker-compose up --build
-
-# Stop containers
-docker-compose down
-```
-
-The API will be available at `http://localhost:8080`.
-
----
-
-### 💻 Running Locally (Without Docker)
-
-1. Ensure PostgreSQL is running locally and the database `online_shopping_db` is created.
-2. Run the application via Maven:
-   ```bash
-   mvn clean spring-boot:run
-   ```
-
----
-
-## 🧪 Running Unit Tests
-
-Execute service layer unit tests using the H2 in-memory database profile:
-
-```bash
-mvn clean test
-```
-
----
-
-## 📖 API Documentation
-
-Once the application is running, access Swagger UI to explore and test the endpoints interactively:
-
-* **Swagger UI**: `http://localhost:8080/swagger-ui/index.html`
-* **OpenAPI Docs**: `http://localhost:8080/v3/api-docs`
-
----
-
-## 🔒 Main API Endpoints
-
-| Method | Endpoint | Description | Access |
-| :--- | :--- | :--- | :--- |
-| **POST** | `/api/auth/register` | Register a new user | Public |
-| **POST** | `/api/auth/login` | Authenticate & retrieve JWT token | Public |
-| **GET** | `/api/products` | Get list of all products | Public / User |
-| **POST** | `/api/products` | Create a new product | Admin |
-| **GET** | `/api/cart` | Retrieve current user's cart | Authenticated |
-| **POST** | `/api/cart/items` | Add product to cart | Authenticated |
-| **POST** | `/api/orders` | Place order from active cart | Authenticated |
-
----
-
-## 👨‍💻 Author
-
-**Rüfət Məmmədov**

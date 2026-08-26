@@ -5,6 +5,7 @@ import com.rufat.onlineshopping.service.CategoryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -20,12 +21,25 @@ public class CategoryController {
 
 	@PostMapping
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto dto) {
+	public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CategoryDto dto) {
 		return ResponseEntity.ok(categoryService.createCategory(dto));
 	}
 
 	@GetMapping
 	public ResponseEntity<List<CategoryDto>> getAllCategories() {
 		return ResponseEntity.ok(categoryService.getAllCategories());
+	}
+
+	@PutMapping("/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryDto dto) {
+		return ResponseEntity.ok(categoryService.updateCategory(id, dto));
+	}
+
+	@DeleteMapping("/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+		categoryService.deleteCategory(id);
+		return ResponseEntity.noContent().build();
 	}
 }

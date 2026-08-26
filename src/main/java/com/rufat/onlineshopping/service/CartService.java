@@ -48,7 +48,9 @@ public class CartService {
 
 		if (existingItem.isPresent()) {
 			CartItem item = existingItem.get();
-			item.setQuantity(item.getQuantity() + request.getQuantity());
+			int requestedTotal = item.getQuantity() + request.getQuantity();
+			validateStock(product, requestedTotal);
+			item.setQuantity(requestedTotal);
 			cartItemRepository.save(item);
 		} else {
 			CartItem newItem = CartItem.builder().cart(cart).product(product).quantity(request.getQuantity()).build();
@@ -56,6 +58,19 @@ public class CartService {
 		}
 
 		return "Məhsul səbətə əlavə olundu!";
+	}
+
+	@Transactional
+	public CartItemDto updateCartItem(String username, Long itemId, Integer quantity) {
+		Cart cart = getCartForUser(username);
+		CartItem item = cartItemRepository.findById(itemId)
+				.orElseThrow(() -> new RuntimeException("Cart item not found"));
+		if (!item.getCart().getId().equals(cart.getId())) {
+			throw new RuntimeException("You cannot modify this cart item");
+		}
+		validateStock(item.getProduct(), quantity);
+		item.setQuantity(quantity);
+		return toDto(cartItemRepository.save(item));
 	}
 
 	public List<CartItemDto> getCartItems(String username) {
@@ -103,5 +118,26 @@ public class CartService {
 
 		cartItemRepository.deleteAll(cart.getItems());
 		cart.getItems().clear();
+	}
+
+	private Cart getCartForUser(String username) {
+		User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+		return cartRepository.findByUserId(user.getId()).orElseThrow(() -> new RuntimeException("Cart not found"));
+	}
+
+	private void validateStock(Product product, int quantity) {
+		if (product.getStockQuantity() < quantity) {
+			throw new RuntimeException("Insufficient product stock");
+		}
+	}
+
+	private CartItemDto toDto(CartItem item) {
+		CartItemDto dto = new CartItemDto();
+		dto.setId(item.getId());
+		dto.setProductId(item.getProduct().getId());
+		dto.setProductName(item.getProduct().getName());
+		dto.setProductPrice(item.getProduct().getPrice());
+		dto.setQuantity(item.getQuantity());
+		return dto;
 	}
 }

@@ -3,6 +3,7 @@ package com.rufat.onlineshopping.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "users")
@@ -30,6 +31,7 @@ public class User {
 	@Column(nullable = false)
 	private Role role;
 
-	@Column(name = "created_at", updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT NOW()")
+	@CreationTimestamp
+	@Column(name = "created_at", updatable = false, nullable = false)
 	private LocalDateTime createdAt;
 }

@@ -3,6 +3,7 @@ package com.rufat.onlineshopping.service;
 import com.rufat.onlineshopping.dto.CategoryDto;
 import com.rufat.onlineshopping.entity.Category;
 import com.rufat.onlineshopping.repository.CategoryRepository;
+import com.rufat.onlineshopping.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +22,9 @@ class CategoryServiceTest {
 
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private ProductRepository productRepository;
 
     @InjectMocks
     private CategoryService categoryService;

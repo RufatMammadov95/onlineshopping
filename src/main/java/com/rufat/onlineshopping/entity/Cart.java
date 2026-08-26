@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "carts")
@@ -22,7 +23,8 @@ public class Cart {
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
-	@Column(name = "created_at", updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT NOW()")
+	@CreationTimestamp
+	@Column(name = "created_at", updatable = false, nullable = false)
 	private LocalDateTime createdAt;
 
 	@OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)

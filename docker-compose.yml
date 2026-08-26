@@ -34,6 +34,18 @@ services:
         networks:
             - app-network
 
+    frontend-app:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        container_name: onlineshopping-frontend
+        ports:
+            - "3000:80"
+        depends_on:
+            - backend-app
+        networks:
+            - app-network
+
 volumes:
     postgres_data:
 

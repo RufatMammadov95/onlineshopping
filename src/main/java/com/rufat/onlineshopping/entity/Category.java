@@ -23,6 +23,9 @@ public class Category {
 	@Column(length = 500)
 	private String description;
 
-	@OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
 	private List<Product> products;
+
+	@ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
+	private List<Product> categorizedProducts;
 }

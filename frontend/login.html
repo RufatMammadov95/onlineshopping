@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="az">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daxil ol | Shoply</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="auth-page"><a class="brand auth-brand" href="index.html"><span>shop</span>ly.</a>
+    <main class="auth-wrap">
+        <section class="auth-card">
+            <p class="eyebrow">Xoş gördük</p>
+            <h1>Hesabınıza daxil olun</h1>
+            <p class="muted">Sifarişlərinizi və səbətinizi idarə edin.</p>
+            <form id="login-form" class="form-stack"><label>İstifadəçi adı<input name="username" required
+                        autocomplete="username" /></label><label>Parol<input type="password" name="password" required
+                        autocomplete="current-password" /></label><button class="btn btn-primary" type="submit">Daxil
+                    ol</button></form>
+            <p class="form-foot">Hesabınız yoxdur? <a href="register.html">Qeydiyyatdan keçin</a></p>
+        </section>
+    </main>
+    <div id="toast" class="toast"></div>
+    <script src="app.js"></script>
+</body>
+
+</html>
